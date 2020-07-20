@@ -61,14 +61,14 @@ class MSTParserLSTMModel(nn.Module):
         self.wdims = options.wembedding_dims
         self.pdims = options.pembedding_dims
         self.rdims = options.rembedding_dims
-        self.odims = options.oembedding_dims
-        self.cdims = options.cembedding_dims
+        #self.odims = options.oembedding_dims
+        #self.cdims = options.cembedding_dims
         self.layers = options.lstm_layers
         self.wordsCount = vocab
         self.vocab = {word: ind + 3 for word, ind in enum_word.items()}
         self.pos = {word: ind + 3 for ind, word in enumerate(pos)}
-        self.onto = {word: ind + 3 for ind, word in enumerate(onto)}
-        self.cpos = {word: ind + 3 for ind, word in enumerate(cpos)}
+        #self.onto = {word: ind + 3 for ind, word in enumerate(onto)}
+        #self.cpos = {word: ind + 3 for ind, word in enumerate(cpos)}
         self.rels = {word: ind for ind, word in enumerate(rels)}
         self.rel_list = rels
         self.hidden_units = options.hidden_units
@@ -76,12 +76,12 @@ class MSTParserLSTMModel(nn.Module):
 
         self.vocab['*PAD*'] = 1
         self.pos['*PAD*'] = 1
-        self.onto['*PAD*'] = 1
-        self.cpos['*PAD*'] = 1
+        #self.onto['*PAD*'] = 1
+        #self.cpos['*PAD*'] = 1
         self.vocab['*INITIAL*'] = 2
         self.pos['*INITIAL*'] = 2
-        self.onto['*INITIAL*'] = 2
-        self.cpos['*INITIAL*'] = 2
+        #self.onto['*INITIAL*'] = 2
+        #self.cpos['*INITIAL*'] = 2
 
         self.external_embedding, self.edim = None, 0
 
@@ -104,10 +104,12 @@ class MSTParserLSTMModel(nn.Module):
             print('Load external embedding. Vector dimensions', self.edim)
 
         # prepare LSTM
-        self.lstm_for_1 = nn.LSTM(
+        '''self.lstm_for_1 = nn.LSTM(
             self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)
         self.lstm_back_1 = nn.LSTM(
-            self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)
+            self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)'''
+        self.lstm_for_1 = nn.LSTM(self.wdims + self.pdims, self.ldims)
+        self.lstm_back_1 = nn.LSTM(self.wdims + self.pdims, self.ldims)
         self.lstm_for_2 = nn.LSTM(self.ldims * 2, self.ldims)
         self.lstm_back_2 = nn.LSTM(self.ldims * 2, self.ldims)
         self.hid_for_1, self.hid_back_1, self.hid_for_2, self.hid_back_2 = [
@@ -116,8 +118,8 @@ class MSTParserLSTMModel(nn.Module):
         self.wlookup = nn.Embedding(len(vocab) + 3, self.wdims)
         self.plookup = nn.Embedding(len(pos) + 3, self.pdims)
         self.rlookup = nn.Embedding(len(rels), self.rdims)
-        self.olookup = nn.Embedding(len(onto) + 3, self.odims)
-        self.clookup = nn.Embedding(len(cpos) + 3, self.cdims)
+        #self.olookup = nn.Embedding(len(onto) + 3, self.odims)
+        #self.clookup = nn.Embedding(len(cpos) + 3, self.cdims)
 
         self.hidLayerFOH = Parameter((self.ldims * 2, self.hidden_units))
         self.hidLayerFOM = Parameter((self.ldims * 2, self.hidden_units))
@@ -218,13 +220,14 @@ class MSTParserLSTMModel(nn.Module):
                 scalar(int(self.vocab.get(entry.norm, 0)))) if self.wdims > 0 else None
             posvec = self.plookup(
                 scalar(int(self.pos[entry.pos]))) if self.pdims > 0 else None
-            ontovec = self.olookup(
+            '''ontovec = self.olookup(
                 scalar(int(self.onto[entry.onto]))) if self.odims > 0 else None
             cposvec = self.clookup(
                 scalar(int(self.cpos[entry.cpos]))) if self.cdims > 0 else None
             evec = self.elookup(scalar(int(self.extrnd.get(entry.form,
-                                                           self.extrnd.get(entry.norm, 0))))) if self.external_embedding is not None else None
-            entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
+                                                           self.extrnd.get(entry.norm, 0))))) if self.external_embedding is not None else None'''
+            #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
+            entry.vec = cat([wordvec, posvec])
 
             entry.lstms = [entry.vec, entry.vec]
             entry.headfov = None
@@ -277,10 +280,10 @@ class MSTParserLSTMModel(nn.Module):
             dropFlag = (random.random() < (c / (0.25 + c)))
             wordvec = self.wlookup(scalar(
                 int(self.vocab.get(entry.norm, 0)) if dropFlag else 0)) if self.wdims > 0 else None
-            ontovec = self.olookup(scalar(int(self.onto[entry.onto]) if random.random(
+            '''ontovec = self.olookup(scalar(int(self.onto[entry.onto]) if random.random(
             ) < 0.9 else 0)) if self.odims > 0 else None
             cposvec = self.clookup(scalar(int(self.cpos[entry.cpos]) if random.random(
-            ) < 0.9 else 0)) if self.cdims > 0 else None
+            ) < 0.9 else 0)) if self.cdims > 0 else None'''
             posvec = self.plookup(
                 scalar(int(self.pos[entry.pos]))) if self.pdims > 0 else None
             # posvec = self.plookup(
@@ -290,7 +293,8 @@ class MSTParserLSTMModel(nn.Module):
                 evec = self.elookup(scalar(self.extrnd.get(entry.form, self.extrnd.get(entry.norm, 0)) if (
                     dropFlag or (random.random() < 0.5)) else 0))
 
-            entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
+            #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
+            entry.vec = cat([wordvec, posvec])
             entry.lstms = [entry.vec, entry.vec]
             entry.headfov = None
             entry.modfov = None
