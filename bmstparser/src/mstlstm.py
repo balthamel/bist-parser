@@ -86,7 +86,7 @@ class MSTParserLSTMModel(nn.Module):
         self.external_embedding, self.edim = None, 0
 
         if options.external_embedding is not None:
-            external_embedding_fp = open(options.external_embedding, 'r')
+            external_embedding_fp = open(options.external_embedding, 'r', encoding='utf-8')
             external_embedding_fp.readline()
             self.external_embedding = {line.split(' ')[0]: [float(f) for f in line.strip().split(' ')[1:]] for line in
                                        external_embedding_fp}
@@ -356,7 +356,7 @@ class MSTParserLSTM:
         self.trainer = get_optim(options, self.model.parameters())
 
     def predict(self, conll_path):
-        with open(conll_path, 'r') as conllFP:
+        with open(conll_path, 'r', encoding='utf-8') as conllFP:
             for iSentence, sentence in enumerate(read_conll(conllFP)):
                 self.model.hid_for_1, self.model.hid_back_1, self.model.hid_for_2, self.model.hid_back_2 = [
                     self.model.init_hidden(self.model.ldims) for _ in range(4)]
@@ -382,7 +382,7 @@ class MSTParserLSTM:
         etotal = 0
         iSentence = 0
         start = time.time()
-        with open(conll_path, 'r') as conllFP:
+        with open(conll_path, 'r', encoding='utf-8') as conllFP:
             shuffledData = list(read_conll(conllFP))
             random.shuffle(shuffledData)
             errs = []

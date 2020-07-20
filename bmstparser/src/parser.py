@@ -85,8 +85,8 @@ if __name__ == '__main__':
                       ' -s ' + testpath + ' > ' + testpath + '.txt')
         else:
             os.system(
-                'python src/utils/evaluation_script/conll17_ud_eval.py -v -w src/utils/evaluation_script/weights.clas ' + options.conll_test + ' ' + testpath + ' > ' + testpath + '.txt')
-            with open(testpath + '.txt', 'r') as f:
+                'python /storage/plzen1/home/agrawala/bist-parser/bmstparser/src/utils/evaluation_script/conll17_ud_eval.py -v -w /storage/plzen1/home/agrawala/bist-parser/bmstparser/src/utils/evaluation_script/weights.clas ' + options.conll_test + ' ' + testpath + ' > ' + testpath + '.txt')
+            with open(testpath + '.txt', 'r', encoding='utf-8') as f:
                 for l in f:
                     if l.startswith('UAS'):
                         print('UAS:%s' % l.strip().split()[-1])
@@ -115,14 +115,14 @@ if __name__ == '__main__':
 
             if not conllu:
                 os.system(
-                    'perl src/utils/eval.pl -g ' + options.conll_dev + ' -s ' + devpath + ' > ' + devpath + '.txt')
-                with open(devpath + '.txt', 'r') as f:
+                    'perl /storage/plzen1/home/agrawala/bist-parser/bmstparser/src/utils/eval.pl -g ' + options.conll_dev + ' -s ' + devpath + ' > ' + devpath + '.txt')
+                with open(devpath + '.txt', 'r', encoding='utf-8') as f:
                     for i in range(0, 3):
                         print(f.readline())
             else:
                 os.system(
-                    'python src/utils/evaluation_script/conll17_ud_eval.py -v -w src/utils/evaluation_script/weights.clas ' + options.conll_dev + ' ' + devpath + ' > ' + devpath + '.txt')
-                with open(devpath + '.txt', 'r') as f:
+                    'python /storage/plzen1/home/agrawala/bist-parser/bmstparser/src/utils/evaluation_script/conll17_ud_eval.py -v -w /storage/plzen1/home/agrawala/bist-parser/bmstparser/src/utils/evaluation_script/weights.clas ' + options.conll_dev + ' ' + devpath + ' > ' + devpath + '.txt')
+                with open(devpath + '.txt', 'r', encoding='utf-8') as f:
                     for l in f:
                         if l.startswith('UAS'):
                             print('UAS:%s' % l.strip().split()[-1])
