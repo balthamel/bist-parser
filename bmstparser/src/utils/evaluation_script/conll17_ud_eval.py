@@ -178,8 +178,8 @@ def load_conllu(file):
 
         # Read next token/word
         columns = line.split("\t")
-        if len(columns) != 10:
-            raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(line))
+        '''if len(columns) != 10:
+            raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(line))'''
 
         # Skip empty nodes
         if "." in columns[ID]:
@@ -206,8 +206,8 @@ def load_conllu(file):
             for _ in range(start, end + 1):
                 word_line = file.readline().rstrip("\r\n")
                 word_columns = word_line.split("\t")
-                if len(word_columns) != 10:
-                    raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(word_line))
+                '''if len(word_columns) != 10:
+                    raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(word_line))'''
                 ud.words.append(UDWord(ud.tokens[-1], word_columns, is_multiword=True))
         # Basic tokens/words
         else:
