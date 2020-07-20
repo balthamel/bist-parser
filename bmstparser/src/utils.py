@@ -8,7 +8,7 @@ def normalize(word):
     return 'NUM' if numberRegex.match(word) else word.lower()
 
 class ConllEntry:
-    def __init__(self, id, form, lemma, pos, cpos, feats=None, parent_id=None, relation=None, deps=None, misc=None):
+    def __init__(self, id, form, lemma, pos, cpos, feats=None, parent_id=None, relation=None, gaze_feats=None):
         self.id = id
         self.form = form
         self.norm = normalize(form)
@@ -19,21 +19,24 @@ class ConllEntry:
 
         self.onto = lemma
         self.feats = feats
-        self.deps = deps
-        self.misc = misc
 
         self.pred_parent_id = None
         self.pred_relation = None
 
+        self.gaze_feats = gaze_feats
+
     def __str__(self):
         values = [str(self.id), self.form, self.onto, self.pos, self.cpos, self.feats,
-                  str(self.pred_parent_id) if self.pred_parent_id is not None else None, self.pred_relation, self.deps, self.misc]
+                  str(self.pred_parent_id) if self.pred_parent_id is not None else None, self.pred_relation]
+        if self.gaze_feats is not None:
+            for feat in self.gaze_feats:
+                values.append(str(feat))
         return '\t'.join(['_' if v is None else v for v in values])
 
 
 def read_conll(conllFP):
     root = ConllEntry(0, '*root*', '*root*', 'ROOT-POS',
-                      'ROOT-CPOS', '_', -1, 'rroot', '_', '_')
+                      'ROOT-CPOS', '_', -1, 'rroot', [0.0] * 17)
     tokens = [root]
     for line in conllFP:
         tok = line.strip().split('\t')
@@ -45,8 +48,11 @@ def read_conll(conllFP):
             if line[0] == '#' or '-' in tok[0] or '.' in tok[0]:
                 tokens.append(line.strip())
             else:
+                gaze_feats = []
+                for i in range(17):
+                    gaze_feats.append(float(tok[i + 8]))
                 tokens.append(ConllEntry(int(tok[0]), tok[1], tok[2], tok[3], tok[4], tok[5], int(
-                    tok[6]) if tok[6] != '_' else -1, tok[7], tok[8], tok[9]))
+                    tok[6]) if tok[6] != '_' else -1, tok[7], gaze_feats))
     if len(tokens) > 1:
         yield tokens
 
