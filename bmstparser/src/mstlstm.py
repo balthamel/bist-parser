@@ -108,8 +108,10 @@ class MSTParserLSTMModel(nn.Module):
             self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)
         self.lstm_back_1 = nn.LSTM(
             self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)'''
-        self.lstm_for_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
-        self.lstm_back_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
+        #self.lstm_for_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
+        #self.lstm_back_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
+        self.lstm_for_1 = nn.LSTM(self.pdims + 17, self.ldims)
+        self.lstm_back_1 = nn.LSTM(self.pdims + 17, self.ldims)
         self.lstm_for_2 = nn.LSTM(self.ldims * 2, self.ldims)
         self.lstm_back_2 = nn.LSTM(self.ldims * 2, self.ldims)
         self.hid_for_1, self.hid_back_1, self.hid_for_2, self.hid_back_2 = [
@@ -216,8 +218,8 @@ class MSTParserLSTMModel(nn.Module):
 
     def predict(self, sentence):
         for entry in sentence:
-            wordvec = self.wlookup(
-                scalar(int(self.vocab.get(entry.norm, 0)))) if self.wdims > 0 else None
+            '''wordvec = self.wlookup(
+                scalar(int(self.vocab.get(entry.norm, 0)))) if self.wdims > 0 else None'''
             posvec = self.plookup(
                 scalar(int(self.pos[entry.pos]))) if self.pdims > 0 else None
             '''ontovec = self.olookup(
@@ -228,7 +230,8 @@ class MSTParserLSTMModel(nn.Module):
                                                            self.extrnd.get(entry.norm, 0))))) if self.external_embedding is not None else None'''
             #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
             gaze_feats = Variable(torch.unsqueeze(torch.Tensor(entry.gaze_feats), 0))
-            entry.vec = cat([wordvec, posvec, gaze_feats])
+            #entry.vec = cat([wordvec, posvec, gaze_feats])
+            entry.vec = cat([posvec, gaze_feats])
 
             entry.lstms = [entry.vec, entry.vec]
             entry.headfov = None
@@ -279,8 +282,8 @@ class MSTParserLSTMModel(nn.Module):
             c = float(self.wordsCount.get(entry.norm, 0))
             # dropFlag = (random.random() < (c / (0.33 + c)))
             dropFlag = (random.random() < (c / (0.25 + c)))
-            wordvec = self.wlookup(scalar(
-                int(self.vocab.get(entry.norm, 0)) if dropFlag else 0)) if self.wdims > 0 else None
+            '''wordvec = self.wlookup(scalar(
+                int(self.vocab.get(entry.norm, 0)) if dropFlag else 0)) if self.wdims > 0 else None'''
             '''ontovec = self.olookup(scalar(int(self.onto[entry.onto]) if random.random(
             ) < 0.9 else 0)) if self.odims > 0 else None
             cposvec = self.clookup(scalar(int(self.cpos[entry.cpos]) if random.random(
@@ -296,7 +299,8 @@ class MSTParserLSTMModel(nn.Module):
 
             #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
             gaze_feats = Variable(torch.unsqueeze(torch.Tensor(entry.gaze_feats), 0))
-            entry.vec = cat([wordvec, posvec, gaze_feats])
+            #entry.vec = cat([wordvec, posvec, gaze_feats])
+            entry.vec = cat([posvec, gaze_feats])
             entry.lstms = [entry.vec, entry.vec]
             entry.headfov = None
             entry.modfov = None
