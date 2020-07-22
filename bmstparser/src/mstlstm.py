@@ -108,8 +108,8 @@ class MSTParserLSTMModel(nn.Module):
             self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)
         self.lstm_back_1 = nn.LSTM(
             self.wdims + self.pdims + self.edim + self.odims + self.cdims, self.ldims)'''
-        self.lstm_for_1 = nn.LSTM(self.wdims + self.pdims, self.ldims)
-        self.lstm_back_1 = nn.LSTM(self.wdims + self.pdims, self.ldims)
+        self.lstm_for_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
+        self.lstm_back_1 = nn.LSTM(self.wdims + self.pdims + 17, self.ldims)
         #self.lstm_for_1 = nn.LSTM(self.pdims, self.ldims)
         #self.lstm_back_1 = nn.LSTM(self.pdims, self.ldims)
         self.lstm_for_2 = nn.LSTM(self.ldims * 2, self.ldims)
@@ -230,7 +230,7 @@ class MSTParserLSTMModel(nn.Module):
                                                            self.extrnd.get(entry.norm, 0))))) if self.external_embedding is not None else None'''
             #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
             gaze_feats = Variable(torch.unsqueeze(torch.Tensor(entry.gaze_feats), 0))
-            entry.vec = cat([wordvec, posvec])
+            entry.vec = cat([wordvec, posvec, gaze_feats])
             #entry.vec = posvec
 
             entry.lstms = [entry.vec, entry.vec]
@@ -299,7 +299,7 @@ class MSTParserLSTMModel(nn.Module):
 
             #entry.vec = cat([wordvec, posvec, ontovec, cposvec, evec])
             gaze_feats = Variable(torch.unsqueeze(torch.Tensor(entry.gaze_feats), 0))
-            entry.vec = cat([wordvec, posvec])
+            entry.vec = cat([wordvec, posvec, gaze_feats])
             #entry.vec = posvec
             entry.lstms = [entry.vec, entry.vec]
             entry.headfov = None
